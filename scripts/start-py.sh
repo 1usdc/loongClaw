@@ -6,22 +6,16 @@
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# 自动识别 just 命令是在项目根还是 build 目录执行：
-# 1) 项目根执行 just：PWD 含 backend-py/
-# 2) build 目录执行 just：PWD 含 main.py + pyproject.toml
-# 3) 其他场景回退到脚本所在路径推断
-if [ -d "$PWD/backend-py" ] && [ -d "$PWD/scripts" ]; then
+# 简化版自动识别目录
+if [ -d "$PWD/backend-py" ]; then
   ROOT="$PWD"
   BACKEND="$ROOT/backend-py"
 elif [ -f "$PWD/main.py" ] && [ -f "$PWD/pyproject.toml" ]; then
   ROOT="$PWD"
   BACKEND="$ROOT"
-elif [ -f "$SCRIPT_DIR/../main.py" ] && [ -f "$SCRIPT_DIR/../pyproject.toml" ]; then
-  ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-  BACKEND="$ROOT"
 else
   ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-  BACKEND="$ROOT/backend-py"
+  [ -f "$ROOT/main.py" ] && [ -f "$ROOT/pyproject.toml" ] && BACKEND="$ROOT" || BACKEND="$ROOT/backend-py"
 fi
 
 DAEMON=0
@@ -164,6 +158,7 @@ fi
 echo "启动 main.py..."
 if [ "$DAEMON" -eq 1 ]; then
   nohup "$VENV_PY" main.py >> anotherclaw.log 2>&1 &
+  echo "$!" >"$ROOT/anotherclaw-daemon.pid"
   echo "已后台启动，PID: $!"
   echo "日志: $(pwd)/anotherclaw.log"
   exit 0

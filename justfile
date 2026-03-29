@@ -13,9 +13,13 @@ version:
 start:
     bash scripts/start-py.sh --py
 
-# start-d 别名 (Alias for start-d)
-start-D: start-d
-
 # 启动后端（后台）(Start backend, daemon)
 start-d:
     bash scripts/start-py.sh --py --daemon
+
+# close 别名 (Alias for close-py)
+close: close-py
+
+# 关闭 start-d 的后台进程 (Stop backend daemon from start-d)
+close-py:
+    bash scripts/close-py.sh
